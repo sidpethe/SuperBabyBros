@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Super Baby Bros. — Gender Reveal Adventure</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="top-bar">
+    <div class="brand-group">
+      <span class="brand-badge" aria-hidden="true">🍄</span>
+      <h1 id="hud-game-title" class="site-title">Super Baby Bros.</h1>
+      <span id="hud-parents" class="parents-pill">Mom &amp; Dad</span>
+    </div>
+
+    <div class="hud-stats" role="status" aria-live="polite">
+      <div class="stat-pill">
+        <span class="stat-label">WORLD</span>
+        <span id="hud-world" class="stat-value">1-1</span>
+      </div>
+      <div class="stat-pill">
+        <span class="stat-label">COINS</span>
+        <span id="hud-coins" class="stat-value">🪙 0</span>
+      </div>
+      <div class="stat-pill">
+        <span class="stat-label">CLUES</span>
+        <div id="hud-clue-slots" class="clue-slots" aria-label="Collected Clues">
+          <button type="button" class="clue-slot" data-level="0" disabled aria-label="View Clue 1 (Locked)">🔒 1</button>
+          <button type="button" class="clue-slot" data-level="1" disabled aria-label="View Clue 2 (Locked)">🔒 2</button>
+          <button type="button" class="clue-slot" data-level="2" disabled aria-label="View Final Reveal (Locked)">🔒 3</button>
+        </div>
+      </div>
+    </div>
+
+    <nav class="hud-actions" aria-label="Game controls and settings">
+      <button type="button" id="btn-sound" class="icon-btn" aria-pressed="true" aria-label="Toggle sound effects">
+        🔊 Sound
+      </button>
+      <button type="button" id="btn-help" class="icon-btn" aria-label="How to play">
+        ❓ Help
+      </button>
+      <button type="button" id="btn-host-setup" class="icon-btn host-btn" aria-label="Host setup and share link">
+        ⚙️ Host Setup
+      </button>
+    </nav>
+  </header>
+
+  <main class="game-stage">
+    <div class="canvas-wrapper">
+      <canvas id="game-canvas" width="960" height="540" aria-label="Super Baby Bros side-scrolling platformer game"></canvas>
+
+      <!-- Title / Start Overlay -->
+      <section id="title-overlay" class="stage-overlay" aria-labelledby="overlay-heading">
+        <div class="title-card">
+          <p id="overlay-due-date" class="eyebrow-pill">Arriving Soon!</p>
+          <h2 id="overlay-heading" class="hero-heading">Super Baby Bros.</h2>
+          <p id="overlay-subtitle" class="hero-subtitle">
+            Run, bounce, and collect golden mystery blocks across 3 bright worlds!
+            Reach the flagpole at the end of each level to unlock a rhyme clue about Baby's gender!
+          </p>
+          <ul class="level-preview-list">
+            <li><span aria-hidden="true">🌻</span> <strong>World 1-1:</strong> Stork's Sunny Meadow <em>(Clue #1)</em></li>
+            <li><span aria-hidden="true">🌙</span> <strong>World 1-2:</strong> Starlight Nursery <em>(Clue #2)</em></li>
+            <li><span aria-hidden="true">🌈</span> <strong>World 1-3:</strong> Rainbow Castle <em>(Grand Reveal!)</em></li>
+          </ul>
+          <div class="title-actions">
+            <button type="button" id="btn-start-game" class="primary-cta">
+              ▶ Start Adventure
+            </button>
+          </div>
+          <p class="controls-hint">
+            <strong>Desktop:</strong> Arrow Keys or A/D to Move • Space / Up / W to Jump<br>
+            <strong>Mobile / Tablet:</strong> Use the on-screen touch buttons below!
+          </p>
+        </div>
+      </section>
+
+      <!-- Floating Toast Banner for in-level hints & power-ups -->
+      <div id="level-toast" class="level-toast" role="status" aria-live="polite" hidden></div>
+    </div>
+
+    <!-- On-Screen Touch Controls for Mobile / Tablet / Mouse -->
+    <section class="touch-controls" aria-label="On-screen game controls">
+      <div class="dpad-group">
+        <button type="button" id="touch-left" class="touch-btn dpad-btn" aria-label="Move Left">
+          ◀
+        </button>
+        <button type="button" id="touch-right" class="touch-btn dpad-btn" aria-label="Move Right">
+          ▶
+        </button>
+      </div>
+      <div class="level-status-bar">
+        <span id="level-name-banner" class="level-name-text">World 1-1: Stork's Sunny Meadow</span>
+        <progress id="level-progress" class="level-progress-bar" value="0" max="100" aria-label="Distance to Flagpole" style="--progress-hue: 45;"></progress>
+      </div>
+      <div class="action-group">
+        <button type="button" id="touch-jump" class="touch-btn jump-btn" aria-label="Jump">
+          ▲ JUMP
+        </button>
+      </div>
+    </section>
+  </main>
+
+  <!-- Clue & Finale Modal Dialog (Native <dialog> with light-dismiss closedby="any") -->
+  <dialog id="clue-dialog" class="game-dialog clue-modal" closedby="any" aria-labelledby="clue-dialog-title">
+    <div class="dialog-inner">
+      <p id="clue-dialog-badge" class="dialog-badge">Clue #1</p>
+      <h2 id="clue-dialog-title" class="dialog-title">A Whisper in the Breeze</h2>
+      <div id="finale-headline-box" class="finale-headline-box" hidden>
+        <p id="finale-headline" class="finale-headline">IT'S A BABY GIRL!</p>
+      </div>
+      <blockquote id="clue-dialog-riddle" class="riddle-box"></blockquote>
+      <p id="clue-dialog-note" class="hint-note"></p>
+      <form method="dialog" class="dialog-actions">
+        <button type="submit" id="btn-next-level" value="next" class="primary-cta">
+          Next World ▶
+        </button>
+        <button type="submit" value="close" class="secondary-cta">
+          Keep Exploring
+        </button>
+      </form>
+    </div>
+  </dialog>
+
+  <!-- Help / How to Play Modal Dialog -->
+  <dialog id="help-dialog" class="game-dialog" closedby="any" aria-labelledby="help-dialog-title">
+    <div class="dialog-inner">
+      <p class="dialog-badge">Adventure Guide</p>
+      <h2 id="help-dialog-title" class="dialog-title">How to Play</h2>
+      <ul class="help-list">
+        <li><strong>Run &amp; Jump:</strong> Use <kbd>←</kbd> <kbd>→</kbd> (or <kbd>A</kbd> <kbd>D</kbd>) to run, and <kbd>Space</kbd>, <kbd>↑</kbd>, or <kbd>W</kbd> to jump. On phones or tablets, use the big <strong>◀ ▶</strong> and <strong>▲ JUMP</strong> buttons.</li>
+        <li><strong>Golden ? Blocks:</strong> Bump them from below to pop out bonus coins, bouncy stars, and mini-sparkles!</li>
+        <li><strong>No Stress Mode:</strong> You have infinite lives! If you fall into a gap or bump a sleepy cloud critter, a friendly stork bubble places you right back on the nearest platform.</li>
+        <li><strong>Collect All 3 Clues:</strong> Grab the flagpole at the end of Worlds 1-1 and 1-2 to read each rhyme clue, then reach the Castle in World 1-3 for the grand fireworks reveal!</li>
+      </ul>
+      <form method="dialog" class="dialog-actions">
+        <button type="submit" value="close" class="primary-cta">Got It!</button>
+      </form>
+    </div>
+  </dialog>
+
+  <!-- Host Setup / Shareable Secret Link Dialog -->
+  <dialog id="host-dialog" class="game-dialog" closedby="any" aria-labelledby="host-dialog-title">
+    <div class="dialog-inner">
+      <p class="dialog-badge">Spoiler-Protected Setup</p>
+      <h2 id="host-dialog-title" class="dialog-title">Host Configuration</h2>
+      <p class="dialog-desc">
+        You can permanently set the gender in <code>config.js</code>, or configure it right here and generate an encoded share link for friends and family (the URL masks the answer so nobody gets spoiled by looking at the link!).
+      </p>
+      <div class="host-form-grid">
+        <div class="field-group">
+          <label for="host-gender-select">Baby's Gender (for Reveal):</label>
+          <select id="host-gender-select" class="host-input">
+            <option value="girl">Baby Girl 💖</option>
+            <option value="boy">Baby Boy 💙</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label for="host-parents-input">Parents' Names:</label>
+          <input type="text" id="host-parents-input" class="host-input" placeholder="e.g. Sarah &amp; Alex">
+        </div>
+        <div class="field-group">
+          <label for="host-duedate-input">Due Date / Tagline:</label>
+          <input type="text" id="host-duedate-input" class="host-input" placeholder="e.g. Arriving March 2027!">
+        </div>
+      </div>
+      <div class="share-url-box">
+        <label for="host-share-url">Encoded Shareable Link:</label>
+        <div class="share-row">
+          <input type="text" id="host-share-url" class="host-input" readonly>
+          <button type="button" id="btn-copy-link" class="secondary-cta">Copy Link</button>
+        </div>
+        <p id="copy-feedback" class="copy-feedback" role="status" aria-live="polite"></p>
+      </div>
+      <form method="dialog" class="dialog-actions">
+        <button type="submit" id="btn-apply-host" value="apply" class="primary-cta">Apply &amp; Restart</button>
+        <button type="submit" value="cancel" class="secondary-cta">Close</button>
+      </form>
+    </div>
+  </dialog>
+
+  <script src="config.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
