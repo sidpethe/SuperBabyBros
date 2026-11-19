@@ -124,9 +124,23 @@ function generateConfigJsContent(gender) {
 
 if (require.main === module) {
   const gender = resolveGenderFromEnv();
-  const outPath = path.join(__dirname, "config.js");
-  fs.writeFileSync(outPath, generateConfigJsContent(gender), "utf8");
-  console.log(`[build] Generated config.js with BABY_GENDER="${gender}"`);
+  const configContent = generateConfigJsContent(gender);
+
+  // 1. Write config.js in project root (for local dev / server.js)
+  const rootConfigPath = path.join(__dirname, "config.js");
+  fs.writeFileSync(rootConfigPath, configContent, "utf8");
+
+  // 2. Populate ./public output directory for static hosts (Vercel, Netlify, etc.)
+  const publicDir = path.join(__dirname, "public");
+  fs.mkdirSync(publicDir, { recursive: true });
+  fs.writeFileSync(path.join(publicDir, "config.js"), configContent, "utf8");
+
+  const staticAssets = ["index.html", "styles.css", "game.js"];
+  for (const file of staticAssets) {
+    fs.copyFileSync(path.join(__dirname, file), path.join(publicDir, file));
+  }
+
+  console.log(`[build] Generated config.js and ./public directory with BABY_GENDER="${gender}"`);
 }
 
 module.exports = { resolveGenderFromEnv, generateConfigJsContent };

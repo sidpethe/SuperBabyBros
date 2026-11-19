@@ -3,7 +3,7 @@
  * To change the gender, set BABY_GENDER=boy or BABY_GENDER=girl in your environment.
  */
 window.GAME_CONFIG = {
-  "babyGender": "boy",
+  "babyGender": "girl",
   "soundEnabledByDefault": true,
   "clueSets": {
     "girl": {
